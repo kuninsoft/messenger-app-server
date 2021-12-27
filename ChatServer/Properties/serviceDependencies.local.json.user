@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "signalr1": {
+      "restored": true,
+      "restoreTime": "2021-12-13T18:50:42.6190385Z"
+    },
+    "secrets1": {
+      "restored": true,
+      "restoreTime": "2021-12-13T18:50:15.2269844Z"
+    },
+    "mssql1": {
+      "restored": true,
+      "restoreTime": "2021-12-13T18:50:17.5150421Z"
+    }
+  },
+  "parameters": {
+    "signalr1.resourceGroupName": {
+      "Name": "signalr1.resourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "cloud-shell-storage-westeurope"
+    },
+    "signalr1.subscriptionId": {
+      "Name": "signalr1.subscriptionId",
+      "Type": "subscription",
+      "Value": "5ec332c3-feca-4dff-8429-9a54d75ae0d0"
+    }
+  }
+}

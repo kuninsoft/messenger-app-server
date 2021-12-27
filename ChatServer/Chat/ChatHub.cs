@@ -23,46 +23,23 @@ namespace ChatServer.Chat
             _messageDb = messageDb;
             _connectionsManager = connectionsManager;
         }
-        
-        [Obsolete] // TODO: Move to the HTTP API
-        public async Task Login(Credentials credentials)
-        {
-            User user = await _userDb.GetUserByUsername(credentials.Username);
-            if (user.CheckPassword(credentials.Password))
-            {
-                _connectionsManager.MapConnectionToUser(user, Context.ConnectionId);
-                await InitializeConversationsForConnection();
-                await Clients.Caller.ApproveLogin(credentials.Username);
-            }
-            else
-            {
-                await Clients.Caller.FailLogin();
-            }
-        }
-
-        
-        [Obsolete] // TODO: Move to the HTTP API
-        public async Task Register(Credentials credentials)
-        {
-            if (await _userDb.CreateUser(credentials.Username, credentials.Password))
-            {
-                // For the sense of usability we automatically log user in after registration.
-                await Login(credentials);
-            }
-            else
-            {
-                await Clients.Caller.FailRegistration();
-            }
-        }
 
         public async Task SendPrivateMessage(PrivateMessageRequest request)
         {
             User sender = await _userDb.GetUserByUsername(request.SenderUsername);
             User recipient = await _userDb.GetUserByUsername(request.RecipientUsername);
 
-            // TODO: Inform user of failure
-            if (sender is null || recipient is null) return;
+            if (sender is null)
+            {
+                await Clients.Caller.FailSendMessage(SendMessageError.SenderUsernameInvalid);
+                return;
+            }
 
+            if (recipient is null)
+            {
+                await Clients.Caller.FailSendMessage(SendMessageError.RecipientUsernameInvalid);
+            }
+            
             string privateConversationName = await GetPrivateConversationName(sender, recipient) ??
                                              await CreatePrivateConversation(sender, recipient);
 
@@ -75,31 +52,30 @@ namespace ChatServer.Chat
                 Message = request.Message
             });
         }
-
-        [Obsolete] // TODO: Move to the HTTP API
-        public async Task GetUserConversations(string username)
-        {
-            var conversations = _conversationDb.GetConversationsWithUser(username);
-            var userConversations = new UserConversations(conversations);
-            await Clients.Caller.ReceiveConversationList(userConversations);
-        }
-
-        [Obsolete] // TODO: Move to the HTTP API
-        public async Task GetConversationMessageHistory(string conversation)
-        {
-            var messages = (await _conversationDb.GetConversation(conversation)).Messages;
-            var messageHistory = new ConversationMessageHistory(conversation, messages);
-            await Clients.Caller.ReceiveConversationMessageHistory(messageHistory);
-        }
         
         public async Task SendMessageToConversation(GenericMessage request)
         {
+            if (string.IsNullOrWhiteSpace(request.Message))
+            {
+                await Clients.Caller.FailSendMessage(SendMessageError.MessageEmpty);
+                return;
+            }
+            
             User sender = await _userDb.GetUserByUsername(request.SenderUsername);
             Conversation conversation = await _conversationDb.GetConversation(request.ConversationName);
 
-            // TODO: Inform user of failure
-            if (sender is null || conversation is null) return;
-            if (string.IsNullOrWhiteSpace(request.Message)) return;
+            if (sender is null)
+            {
+                await Clients.Caller.FailSendMessage(SendMessageError.SenderUsernameInvalid);
+                return;
+            }
+
+            if (conversation is null)
+            {
+                await Clients.Caller.FailSendMessage(SendMessageError.ConversationInvalid);
+                return;
+            }
+
 
             Message rawMessage = await _messageDb.NewMessage(sender, conversation, request.Message, DateTime.Now);
 
@@ -162,5 +138,56 @@ namespace ChatServer.Chat
                 }
             }
         }
+
+        #region Obsolete
+
+        [Obsolete] // TODO: Move to the HTTP API
+        public async Task GetUserConversations(string username)
+        {
+            var conversations = _conversationDb.GetConversationsWithUser(username);
+            var userConversations = new UserConversations(conversations);
+            await Clients.Caller.ReceiveConversationList(userConversations);
+        }
+
+        [Obsolete] // TODO: Move to the HTTP API
+        public async Task Login(Credentials credentials)
+        {
+            User user = await _userDb.GetUserByUsername(credentials.Username);
+            if (user.CheckPassword(credentials.Password))
+            {
+                _connectionsManager.MapConnectionToUser(user, Context.ConnectionId);
+                await InitializeConversationsForConnection();
+                await Clients.Caller.ApproveLogin(credentials.Username);
+            }
+            else
+            {
+                await Clients.Caller.FailLogin();
+            }
+        }
+
+        
+        [Obsolete] // TODO: Move to the HTTP API
+        public async Task Register(Credentials credentials)
+        {
+            if (await _userDb.CreateUser(credentials.Username, credentials.Password))
+            {
+                // For the sense of usability we automatically log user in after registration.
+                await Login(credentials);
+            }
+            else
+            {
+                await Clients.Caller.FailRegistration();
+            }
+        }
+
+        [Obsolete] // TODO: Move to the HTTP API
+        public async Task GetConversationMessageHistory(string conversation)
+        {
+            var messages = (await _conversationDb.GetConversation(conversation)).Messages;
+            var messageHistory = new ConversationMessageHistory(conversation, messages);
+            await Clients.Caller.ReceiveConversationMessageHistory(messageHistory);
+        }
+
+        #endregion
     }
 }

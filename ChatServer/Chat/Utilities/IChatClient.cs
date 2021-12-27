@@ -6,6 +6,7 @@ namespace ChatServer.Chat.Utilities
     public interface IChatClient
     {
         public Task ReceiveMessage(GenericMessage message);
+        public Task FailSendMessage(SendMessageError error);
 
         #region Obsolete
 

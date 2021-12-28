@@ -30,10 +30,10 @@ namespace ChatServer
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString(DatabaseName)));
             
-            services.AddSingleton<IConversationRepository, ConversationRepository>();
-            services.AddSingleton<IMessageRepository, MessageRepository>();
-            services.AddSingleton<IUserRepository, UserRepository>();
-            services.AddSingleton<IConnectionsManager, ConnectionsManager>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IConnectionsManager, ConnectionsManager>();
             
             services.AddSignalR();
         }

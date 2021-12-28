@@ -48,7 +48,7 @@ namespace ChatServer.DataAccess
         {
             return await _context.Conversations
                 .Include(c => c.Users)
-                .Include(c => c.Messages)
+                .ThenInclude(c => c.Messages)
                 .FirstOrDefaultAsync(c => c.Name == conversationName);
         }
 

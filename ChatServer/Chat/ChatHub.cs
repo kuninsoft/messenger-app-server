@@ -10,12 +10,12 @@ namespace ChatServer.Chat
 {
     public class ChatHub : Hub<IChatClient>
     {
-        private readonly IConversationDatabase _conversationDb;
-        private readonly IUserDatabase _userDb;
-        private readonly IMessageDatabase _messageDb;
+        private readonly IConversationRepository _conversationDb;
+        private readonly IUserRepository _userDb;
+        private readonly IMessageRepository _messageDb;
         private readonly IConnectionsManager _connectionsManager;
 
-        public ChatHub(IConversationDatabase conversationDb, IUserDatabase userDb, IMessageDatabase messageDb,
+        public ChatHub(IConversationRepository conversationDb, IUserRepository userDb, IMessageRepository messageDb,
             IConnectionsManager connectionsManager)
         {
             _conversationDb = conversationDb;
@@ -77,7 +77,7 @@ namespace ChatServer.Chat
             }
 
 
-            Message rawMessage = await _messageDb.NewMessage(sender, conversation, request.Message, DateTime.Now);
+            Message rawMessage = await _messageDb.CreateAndGetMessage(sender, conversation, request.Message, DateTime.Now);
 
             var messageUnderstandableToClient = new GenericMessage
             {

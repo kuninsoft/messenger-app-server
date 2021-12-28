@@ -3,7 +3,7 @@ using ChatServer.Model;
 
 namespace ChatServer.DataAccess
 {
-    public interface IUserDatabase
+    public interface IUserRepository
     {
         public Task<User> GetUserByUsername(string username);
         public Task<bool> CreateUser(string username, string password);

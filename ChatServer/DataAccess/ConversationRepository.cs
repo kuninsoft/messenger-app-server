@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using ChatServer.Model;
@@ -7,20 +8,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatServer.DataAccess
 {
-    public class ConversationDb : IConversationDatabase
+    public class ConversationRepository : IConversationRepository
     {
+        private readonly AppDbContext _context;
+
+        public ConversationRepository(AppDbContext context)
+        {
+            _context = context;
+        }
+        
         public async Task<bool> CreateConversation(string name, ConversationType type)
         {
-            await using var context = new AppContext();
-
             if (await GetConversation(name) is not null)
             {
                 return false;
             }
             
             var conversation = new Conversation(name, type);
-            await context.Conversations.AddAsync(conversation);
-            await context.SaveChangesAsync();
+            await _context.Conversations.AddAsync(conversation);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
 
             return true;
         }
@@ -32,9 +46,7 @@ namespace ChatServer.DataAccess
 
         public async Task<Conversation> GetConversation(string conversationName)
         {
-            await using var context = new AppContext();
-
-            return await context.Conversations
+            return await _context.Conversations
                 .Include(c => c.Users)
                 .Include(c => c.Messages)
                 .FirstOrDefaultAsync(c => c.Name == conversationName);
@@ -42,9 +54,7 @@ namespace ChatServer.DataAccess
 
         public List<Conversation> GetConversationsWithUser(string username)
         {
-            using var context = new AppContext();
-
-            return context.Conversations
+            return _context.Conversations
                 .Include(c => c.Users)
                 .Where(c => c.Users.FirstOrDefault(u => u.Username == username) != null)
                 .ToList();
@@ -60,22 +70,32 @@ namespace ChatServer.DataAccess
             return await GetConversation(name);
         }
 
-        public async Task AddUserToConversation(string conversationName, User user)
+        public async Task<bool> AddUserToConversation(string conversationName, User user)
         {
-            await using var context = new AppContext();
+            _context.Conversations.FirstOrDefault(c => c.Name == conversationName)?.
+                Users?.Add(_context.Users.FirstOrDefault(u => u.Username == user.Username));
 
-            context.Conversations.FirstOrDefault(c => c.Name == conversationName)?.
-                Users?.Add(context.Users.FirstOrDefault(u => u.Username == user.Username));
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
 
-            await context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task AddUsersToConversation(string conversationName, params User[] users)
+        public async Task<bool> AddUsersToConversation(string conversationName, params User[] users)
         {
             foreach (User user in users)
             {
-                await AddUserToConversation(conversationName, user);
+                bool successful = await AddUserToConversation(conversationName, user);
+                if (!successful) return false;
             }
+
+            return true;
         }
     }
 }

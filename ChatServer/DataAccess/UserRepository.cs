@@ -7,13 +7,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ChatServer.DataAccess
 {
-    public class UserDb : IUserDatabase
+    public class UserRepository : IUserRepository
     {
+        private readonly AppDbContext _context;
+
+        public UserRepository(AppDbContext context)
+        {
+            _context = context;
+        }
+        
         public async Task<User> GetUserByUsername(string username)
         {
-            await using var context = new AppContext();
-
-            return await context.Users
+            return await _context.Users
                 .Include(u => u.Conversations)
                 .Include(u => u.Messages)
                 .FirstOrDefaultAsync(u => u.Username == username);
@@ -21,16 +26,22 @@ namespace ChatServer.DataAccess
 
         public async Task<bool> CreateUser(string username, string password)
         {
-            await using var context = new AppContext();
-
             if (await GetUserByUsername(username) is not null)
             {
                 return false;
             }
             
             var user = new User(username, password);
-            await context.Users.AddAsync(user);
-            await context.SaveChangesAsync();
+            await _context.Users.AddAsync(user);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
 
             return true;
         }

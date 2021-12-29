@@ -18,10 +18,7 @@ namespace ChatServer.DataAccess
         
         public async Task<User> GetUserByUsername(string username)
         {
-            return await _context.Users
-                .Include(u => u.Conversations)
-                .ThenInclude(u => u.Messages)
-                .FirstOrDefaultAsync(u => u.Username == username);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task<bool> CreateUser(string username, string password)

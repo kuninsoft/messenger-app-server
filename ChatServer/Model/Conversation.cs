@@ -12,8 +12,8 @@ namespace ChatServer.Model
         [Required]
         public ConversationType Type { get; set; }
         
-        public List<User> Users { get; set; } = new();
-        public List<Message> Messages { get; set; } = new();
+        public virtual List<User> Users { get; set; } = new();
+        public virtual List<Message> Messages { get; set; } = new();
 
         public Conversation() { }
 

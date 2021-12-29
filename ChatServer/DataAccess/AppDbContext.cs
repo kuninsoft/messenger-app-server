@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatServer.DataAccess
 {
-    public class AppDbContext : DbContext
+    public sealed class AppDbContext : DbContext
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Conversation> Conversations { get; set; }

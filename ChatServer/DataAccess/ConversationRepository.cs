@@ -46,16 +46,12 @@ namespace ChatServer.DataAccess
 
         public async Task<Conversation> GetConversation(string conversationName)
         {
-            return await _context.Conversations
-                .Include(c => c.Users)
-                .ThenInclude(c => c.Messages)
-                .FirstOrDefaultAsync(c => c.Name == conversationName);
+            return await _context.Conversations.FirstOrDefaultAsync(c => c.Name == conversationName);
         }
 
         public List<Conversation> GetConversationsWithUser(string username)
         {
             return _context.Conversations
-                .Include(c => c.Users)
                 .Where(c => c.Users.FirstOrDefault(u => u.Username == username) != null)
                 .ToList();
         }

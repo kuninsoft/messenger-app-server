@@ -28,7 +28,8 @@ namespace ChatServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString(DatabaseName)));
+                options.UseLazyLoadingProxies()
+                    .UseSqlServer(Configuration.GetConnectionString(DatabaseName)));
             
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();

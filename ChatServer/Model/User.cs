@@ -17,8 +17,8 @@ namespace ChatServer.Model
         [Required]
         public string Salt { get; set; }
 
-        public List<Conversation> Conversations { get; set; } = new();
-        public List<Message> Messages { get; set; } = new();
+        public virtual List<Conversation> Conversations { get; set; } = new();
+        public virtual List<Message> Messages { get; set; } = new();
         
         public User() { }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using ChatServer.DataAccess.EFCore;
 using ChatServer.Model;
 using Microsoft.EntityFrameworkCore;
 
@@ -44,16 +45,14 @@ namespace ChatServer.DataAccess
             return await GetConversation(name) is not null;
         }
 
-        public async Task<Conversation> GetConversation(string conversationName)
+        public async Task<Conversation> GetConversation(int id)
         {
-            return await _context.Conversations.FirstOrDefaultAsync(c => c.Name == conversationName);
+            return await _context.Conversations.FindAsync(id);
         }
 
-        public List<Conversation> GetConversationsWithUser(string username)
+        public async Task<Conversation> GetConversation(string conversationName)
         {
-            return _context.Conversations
-                .Where(c => c.Users.FirstOrDefault(u => u.Username == username) != null)
-                .ToList();
+            return await _context.Conversations.AsQueryable().FirstOrDefaultAsync(c => c.Name == conversationName);
         }
 
         public async Task<Conversation> CreateAndGetConversation(string name, ConversationType type)
@@ -66,10 +65,10 @@ namespace ChatServer.DataAccess
             return await GetConversation(name);
         }
 
-        public async Task<bool> AddUserToConversation(string conversationName, User user)
+        public async Task<bool> AddUserToConversation(int conversationId, int userId)
         {
-            _context.Conversations.FirstOrDefault(c => c.Name == conversationName)?.
-                Users?.Add(_context.Users.FirstOrDefault(u => u.Username == user.Username));
+            var conversation = await GetConversation(conversationId);
+            conversation.Users?.Add(await _context.Users.FindAsync(userId));
 
             try
             {
@@ -83,11 +82,11 @@ namespace ChatServer.DataAccess
             return true;
         }
 
-        public async Task<bool> AddUsersToConversation(string conversationName, params User[] users)
+        public async Task<bool> AddUsersToConversation(int conversationId, params int[] userIds)
         {
-            foreach (User user in users)
+            foreach (int userId in userIds)
             {
-                bool successful = await AddUserToConversation(conversationName, user);
+                bool successful = await AddUserToConversation(conversationId, userId);
                 if (!successful) return false;
             }
 

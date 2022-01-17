@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace ChatServer.Model
 {
-    public class User
+    public class User : IEntity
     {
         [Key]
         public int Id { get; set; }

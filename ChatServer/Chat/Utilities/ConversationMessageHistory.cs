@@ -6,22 +6,20 @@ namespace ChatServer.Chat.Utilities
     public class ConversationMessageHistory
     {
         public string ConversationName { get; set; }
-        public List<GenericMessage> Messages { get; set; }
+        public List<MessageToReceive> Messages { get; set; }
 
         public ConversationMessageHistory(string conversationName, List<Message> messages)
         {
             ConversationName = conversationName;
-            Messages = new List<GenericMessage>();
+            Messages = new List<MessageToReceive>();
             foreach (Message message in messages)
             {
-                Messages.Add(new GenericMessage
-                {
-                    SenderUsername = message.User.Username,
-                    ConversationName = message.Conversation.Name,
-                    ConversationType = message.Conversation.Type,
-                    Message = message.Text,
-                    Time = message.Time
-                });
+                Messages.Add(
+                        new MessageToReceive
+                        {
+                            Id = message.Id
+                        }
+                    );
             }
         }
     }

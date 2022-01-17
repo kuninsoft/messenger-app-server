@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ChatServer.DataAccess.EFCore;
 using ChatServer.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,15 +17,20 @@ namespace ChatServer.DataAccess
         {
             _context = context;
         }
-        
-        public async Task<User> GetUserByUsername(string username)
+
+        public async Task<User> GetUser(int id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return await _context.Users.FindAsync(id);
+        }
+        
+        public async Task<User> GetUser(string username)
+        {
+            return await _context.Users.AsQueryable().FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task<bool> CreateUser(string username, string password)
         {
-            if (await GetUserByUsername(username) is not null)
+            if (await GetUser(username) is not null)
             {
                 return false;
             }
@@ -43,6 +50,12 @@ namespace ChatServer.DataAccess
             return true;
         }
 
+        public async Task<List<Conversation>> GetUserConversations(int userId)
+        {
+            var user = await GetUser(userId);
+            return user.Conversations;
+        } 
+
         public async Task<User> CreateAndGetUser(string username, string password)
         {
             if (!await CreateUser(username, password))
@@ -50,7 +63,7 @@ namespace ChatServer.DataAccess
                 throw new InvalidOperationException();
             }
             
-            return await GetUserByUsername(username);
+            return await GetUser(username);
         }
     }
 }

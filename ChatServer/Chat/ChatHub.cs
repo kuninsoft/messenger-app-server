@@ -26,8 +26,13 @@ namespace ChatServer.Chat
 
         public async Task SendPrivateMessage(PrivateMessageRequest request)
         {
-            User sender = await _userDb.GetUserByUsername(request.SenderUsername);
-            User recipient = await _userDb.GetUserByUsername(request.RecipientUsername);
+            if (request.SenderUsername == request.RecipientUsername)
+            {
+                await Clients.Caller.FailSendMessage(SendMessageError.RecipientUsernameInvalid);
+            }
+            
+            User sender = await _userDb.GetUser(request.SenderUsername);
+            User recipient = await _userDb.GetUser(request.RecipientUsername);
 
             if (sender is null)
             {
@@ -61,7 +66,7 @@ namespace ChatServer.Chat
                 return;
             }
             
-            User sender = await _userDb.GetUserByUsername(request.SenderUsername);
+            User sender = await _userDb.GetUser(request.SenderUsername);
             Conversation conversation = await _conversationDb.GetConversation(request.ConversationName);
 
             if (sender is null)
@@ -142,17 +147,9 @@ namespace ChatServer.Chat
         #region Obsolete
 
         [Obsolete] // TODO: Move to the HTTP API
-        public async Task GetUserConversations(string username)
-        {
-            var conversations = _conversationDb.GetConversationsWithUser(username);
-            var userConversations = new UserConversations(conversations);
-            await Clients.Caller.ReceiveConversationList(userConversations);
-        }
-
-        [Obsolete] // TODO: Move to the HTTP API
         public async Task Login(Credentials credentials)
         {
-            User user = await _userDb.GetUserByUsername(credentials.Username);
+            User user = await _userDb.GetUser(credentials.Username);
             if (user.CheckPassword(credentials.Password))
             {
                 _connectionsManager.MapConnectionToUser(user, Context.ConnectionId);

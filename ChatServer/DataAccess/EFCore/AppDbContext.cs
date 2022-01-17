@@ -1,7 +1,7 @@
 using ChatServer.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace ChatServer.DataAccess
+namespace ChatServer.DataAccess.EFCore
 {
     public sealed class AppDbContext : DbContext
     {

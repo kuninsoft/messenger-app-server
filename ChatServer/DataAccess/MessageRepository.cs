@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using ChatServer.DataAccess.EFCore;
 using ChatServer.Model;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,19 +16,19 @@ namespace ChatServer.DataAccess
             _context = context;
         }
         
-        public async Task<Message> CreateAndGetMessage(User sender, Conversation conversation, string text, DateTime time)
+        public async Task<Message> CreateAndGetMessage(int senderId, int conversationId, string text, DateTime time)
         {
-            int messageId = await CreateMessage(sender, conversation, text, time);
+            int messageId = await CreateMessage(senderId, conversationId, text, time);
             Message message = await GetMessage(messageId);
             return message;
         }
 
-        public async Task<int> CreateMessage(User sender, Conversation conversation, string text, DateTime time)
+        public async Task<int> CreateMessage(int senderId, int conversationId, string text, DateTime time)
         {
             var message = new Message(text, time)
             {
-                Conversation = _context.Conversations.FirstOrDefault(c => c.Name == conversation.Name),
-                User = _context.Users.FirstOrDefault(u => u.Username == sender.Username)
+                Conversation = await _context.Conversations.FindAsync(conversationId),
+                User = await _context.Users.FindAsync(senderId)
             };
 
             _context.Messages.Add(message);

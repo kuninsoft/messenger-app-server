@@ -8,10 +8,10 @@ namespace ChatServer.DataAccess
     {
         public Task<bool> CreateConversation(string name, ConversationType type);
         public Task<bool> CheckExistence(string name);
+        public Task<Conversation> GetConversation(int id);
         public Task<Conversation> GetConversation(string name);
-        public List<Conversation> GetConversationsWithUser(string username);
         public Task<Conversation> CreateAndGetConversation(string name, ConversationType type);
-        public Task<bool> AddUserToConversation(string conversationName, User user);
-        public Task<bool> AddUsersToConversation(string conversationName, params User[] users);
+        public Task<bool> AddUserToConversation(int conversationId, int userId);
+        public Task<bool> AddUsersToConversation(int conversationId, params int[] userIds);
     }
 }

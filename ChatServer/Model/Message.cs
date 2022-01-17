@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace ChatServer.Model
 {
-    public class Message
+    public class Message : IEntity
     {
         [Key]
         public int Id { get; set; }
@@ -18,6 +19,8 @@ namespace ChatServer.Model
         public int UserId { get; set; }
         public virtual User User { get; set; }
 
+        public virtual List<MessageAttachment> Attachments { get; set; }
+        
         public Message() { }
 
         public Message(string text, DateTime time)

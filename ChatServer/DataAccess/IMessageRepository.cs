@@ -6,8 +6,8 @@ namespace ChatServer.DataAccess
 {
     public interface IMessageRepository
     {
-        public Task<Message> CreateAndGetMessage(User sender, Conversation conversation, string text, DateTime time);
-        public Task<int> CreateMessage(User sender, Conversation conversation, string text, DateTime time);
+        public Task<Message> CreateAndGetMessage(int senderId, int conversationId, string text, DateTime time);
+        public Task<int> CreateMessage(int senderId, int conversationId, string text, DateTime time);
         public Task<Message> GetMessage(int id);
     }
 }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ChatServer.Chat;
 using ChatServer.Chat.Utilities;
 using ChatServer.DataAccess;
+using ChatServer.DataAccess.EFCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -35,7 +36,8 @@ namespace ChatServer
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IConnectionsManager, ConnectionsManager>();
-            
+
+            services.AddControllers();
             services.AddSignalR();
         }
 
@@ -45,12 +47,12 @@ namespace ChatServer
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context => { await context.Response.WriteAsync("hi"); });
+                endpoints.MapControllers();
                 endpoints.MapHub<ChatHub>("/chat");
             });
         }
